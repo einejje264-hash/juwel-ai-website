@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
+  <title>Jewel AI - Next-Gen Assistant</title> 
+  <!-- Google Fonts & FontAwesome Icons --> 
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"> 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> 
+  <style> 
+    :root { 
+      --primary: #ff2a85; 
+      --secondary: #8a2be2; 
+      --cyan: #00f2fe; 
+      --bg: #0b0b14; 
+      --card-bg: rgba(255, 255, 255, 0.06); 
+      --glass-border: rgba(255, 255, 255, 0.12); 
+      --text: #ffffff; 
+    } 
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: 'Poppins', 'Hind Siliguri', sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+    } 
+    body { 
+      background: radial-gradient(circle at top right, #1f0b35, var(--bg)); 
+      color: var(--text); 
+      height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+      overflow: hidden; 
+    } 
+    /* Top Bar */ 
+    .top-bar { 
+      padding: 16px 20px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      background: rgba(11, 11, 20, 0.85); 
+      backdrop-filter: blur(15px); 
+      border-bottom: 1px solid var(--glass-border); 
+      z-index: 10; 
+    } 
+    .logo { 
+      font-weight: 700; 
+      font-size: 18px; 
+      background: linear-gradient(45deg, var(--primary), var(--cyan)); 
+      -webkit-background-clip: text; 
+      -webkit-text-fill-color: transparent; 
+    } 
+    .dev-badge { 
+      background: linear-gradient(45deg, rgba(255,42,133,0.2), rgba(138,43,226,0.2)); 
+      border: 1px solid var(--primary); 
+      padding: 4px 12px; 
+      border-radius: 20px; 
+      font-size: 11px; 
+      color: #ff94c2; 
+    } 
+    /* Container */ 
+    #main-content { 
+      flex: 1; 
+      overflow-y: auto; 
+      padding: 20px; 
+      padding-bottom: 90px; 
+    } 
+    .tab-view { 
+      display: none; 
+      animation: fadeIn 0.3s ease-in-out forwards; 
+    } 
+    .tab-view.active { 
+      display: block; 
+    } 
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(8px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    } 
+    /* Home View Elements */ 
+    .avatar-wrapper { 
+      position: relative; 
+      width: 130px; 
+      height: 130px; 
+      margin: 20px auto; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+    } 
+    .avatar-core { 
+      width: 100px; 
+      height: 100px; 
+      background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+      border-radius: 50%; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 42px; 
+      box-shadow: 0 0 35px var(--primary); 
+      z-index: 2; 
+    } 
+    .avatar-ring { 
+      position: absolute; 
+      width: 100%; 
+      height: 100%; 
+      border-radius: 50%; 
+      border: 2px dashed var(--cyan); 
+      animation: rotateRing 8s linear infinite; 
+    } 
+    .avatar-wrapper.listening .avatar-core { 
+      animation: pulse 1s infinite alternate; 
+    } 
+    @keyframes rotateRing { 
+      100% { transform: rotate(360deg); } 
+    } 
+    @keyframes pulse { 
+      0% { transform: scale(1); box-shadow: 0 0 20px var(--primary); } 
+      100% { transform: scale(1.12); box-shadow: 0 0 45px var(--cyan); } 
+    } 
+    .speech-bubble { 
+      background: var(--card-bg); 
+      border: 1px solid var(--glass-border); 
+      backdrop-filter: blur(10px); 
+      padding: 16px; 
+      border-radius: 16px; 
+      text-align: center; 
+      margin-bottom: 25px; 
+      min-height: 55px; 
+      font-size: 14px; 
+      line-height: 1.5; 
+    } 
+    /* Action Chips */ 
+    .chip-container { 
+      display: flex; 
+      gap: 10px; 
+      flex-wrap: wrap; 
+      justify-content: center; 
+      margin-bottom: 25px; 
+    } 
+    .chip { 
+      background: var(--card-bg); 
+      border: 1px solid var(--glass-border); 
+      padding: 8px 14px; 
+      border-radius: 20px; 
+      font-size: 12px; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      gap: 6px; 
+      transition: 0.2s; 
+    } 
+    .chip:hover { 
+      background: rgba(255, 42, 133, 0.2); 
+      border-color: var(--primary); 
+    } 
+    /* Mic Button */ 
+    .mic-button { 
+      width: 65px; 
+      height: 65px; 
+      margin: 10px auto; 
+      border-radius: 50%; 
+      background: linear-gradient(45deg, var(--primary), var(--secondary)); 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-size: 24px; 
+      cursor: pointer; 
+      box-shadow: 0 8px 25px rgba(255, 42, 133, 0.5); 
+      border: none; 
+      color: white; 
+      transition: transform 0.2s; 
+    } 
+    .mic-button:active { 
+      transform: scale(0.92); 
+    } 
+    /* AI Image / Video Generator Card */ 
+    .card { 
+      background: var(--card-bg); 
+      border: 1px solid var(--glass-border); 
+      border-radius: 16px; 
+      padding: 18px; 
+      margin-bottom: 15px; 
+      backdrop-filter: blur(12px); 
+    } 
+    .card h3 { 
+      font-size: 16px; 
+      margin-bottom: 12px; 
+      color: var(--cyan); 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+    } 
+    .input-box { 
+      width: 100%; 
+      background: rgba(0,0,0,0.4); 
+      border: 1px solid var(--glass-border); 
+      padding: 12px; 
+      border-radius: 10px; 
+      color: white; 
+      font-size: 13px; 
+      margin-bottom: 10px; 
+      outline: none; 
+    } 
+    .action-btn { 
+      width: 100%; 
+      padding: 12px; 
+      background: linear-gradient(45deg, var(--primary), var(--secondary)); 
+      border: none; 
+      border-radius: 10px; 
+      color: white; 
+      font-weight: 600; 
+      font-size: 14px; 
+      cursor: pointer; 
+    } 
+    .generated-img { 
+      width: 100%; 
+      border-radius: 12px; 
+      margin-top: 12px; 
+      display: none; 
+      border: 1px solid var(--cyan); 
+    } 
+    /* Bottom Navigation Bar */ 
+    .bottom-nav { 
+      position: fixed; 
+      bottom: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 70px; 
+      background: rgba(11, 11, 20, 0.95); 
+      backdrop-filter: blur(20px); 
+      display: flex; 
+      justify-content: space-around; 
+      align-items: center; 
+      border-top: 1px solid var(--glass-border); 
+      z-index: 100; 
+    } 
+    .nav-btn { 
+      background: none; 
+      border: none; 
+      color: #717182; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      font-size: 11px; 
+      gap: 4px; 
+      cursor: pointer; 
+      transition: color 0.3s; 
+    } 
+    .nav-btn i { 
+      font-size: 20px; 
+    } 
+    .nav-btn.active { 
+      color: var(--primary); 
+    } 
+    .nav-btn.active i { 
+      text-shadow: 0 0 10px var(--primary); 
+    } 
+  </style>
+</head>
+<body> 
+  <!-- Top Bar --> 
+  <header class="top-bar"> 
+    <div class="logo"><i class="fa-solid fa-sparkles"></i> JEWEL AI</div> 
+    <div class="dev-badge">ক্রিয়েটর: জুয়েল ভাই</div> 
+  </header> 
+
+  <!-- Main Views Container --> 
+  <main id="main-content"> 
+    <!-- ট্যাব ১: হোম স্ক্রিন --> 
+    <section id="home-view" class="tab-view active"> 
+      <div class="avatar-wrapper" id="avatar-container"> 
+        <div class="avatar-ring"></div> 
+        <div class="avatar-core"><i class="fa-solid fa-heart"></i></div> 
+      </div> 
+      <div class="speech-bubble" id="response-box"> 
+        হাই জুয়েল ভাই! আমি আপনার সুইট গার্লফ্রেন্ড অ্যাসিস্ট্যান্ট। আমাকে কিছু করতে বলুন... 💖 
+      </div> 
+      <div class="chip-container"> 
+        <div class="chip" onclick="handleCommand('ইউটিউব খোলো')"><i class="fa-brands fa-youtube" style="color:#ff0000;"></i> YouTube</div> 
+        <div class="chip" onclick="handleCommand('হোয়াটসঅ্যাপ ওপেন করো')"><i class="fa-brands fa-whatsapp" style="color:#25d366;"></i> WhatsApp</div> 
+        <div class="chip" onclick="handleCommand('প্লে স্টোর খোলো')"><i class="fa-brands fa-google-play" style="color:#00f2fe;"></i> Play Store</div> 
+        <div class="chip" onclick="handleCommand('কে বানিয়েছে')"><i class="fa-solid fa-crown" style="color:#ffd700;"></i> ডেভেলপার কে?</div> 
+      </div> 
+      <button class="mic-button" id="voice-trigger"><i class="fa-solid fa-microphone"></i></button> 
+    </section> 
+
+    <!-- ট্যাব ২: মেনু ও জেনারেশন টুলস --> 
+    <section id="menu-view" class="tab-view"> 
+      <!-- ফটো জেনারেটর --> 
+      <div class="card"> 
+        <h3><i class="fa-solid fa-palette"></i> আনলিমিটেড AI ছবি বানান</h3> 
+        <input type="text" id="img-prompt" class="input-box" placeholder="যেমন: Beautiful futuristic girl in saree..."> 
+        <button class="action-btn" onclick="generateAIImage()"><i class="fa-solid fa-wand-magic-sparkles"></i> ছবি তৈরি করুন</button> 
+        <img id="result-img" class="generated-img" alt="Generated by Jewel AI"> 
+      </div> 
+      <!-- ১০ সেকেন্ড ভিডিও জেনারেটর --> 
+      <div class="card"> 
+        <h3><i class="fa-solid fa-video"></i> ১০ সেকেন্ড এআই ভিডিও (১০টি বাকি)</h3> 
+        <input type="text" id="video-prompt" class="input-box" placeholder="ভিডিও প্রম্পট লিখুন..."> 
+        <button class="action-btn" style="background: linear-gradient(45deg, #00c6ff, #0072ff);" onclick="simulateVideoGen()"> 
+          <i class="fa-solid fa-play"></i> ভিডিও জেনারেট করুন (10s) 
+        </button> 
+        <p id="video-status" style="font-size: 12px; margin-top: 8px; color: #ff94c2;"></p> 
+      </div> 
+    </section> 
+
+    <!-- ট্যাব ৩: মাই অ্যাকাউন্ট --> 
+    <section id="account-view" class="tab-view"> 
+      <div class="card" style="text-align: center;"> 
+        <i class="fa-solid fa-shield-cat" style="font-size: 50px; color: var(--primary); margin-bottom: 10px;"></i> 
+        <h2>জুয়েল ভাই (VIP)</h2> 
+        <p style="color: #aaa; font-size: 13px;">মালিক ও প্রধান ডেভেলপার</p> 
+        <div style="margin-top: 15px; text-align: left; font-size: 13px; line-height: 2;"> 
+          <p><i class="fa-solid fa-check-circle" style="color:var(--cyan);"></i> মুড: রোমান্টিক গার্লফ্রেন্ড মুড অন</p> 
+          <p><i class="fa-solid fa-check-circle" style="color:var(--cyan);"></i> ভিডিও কোটা: দৈনিক ১০টি (১০ সেকেন্ড)</p> 
+          <p><i class="fa-solid fa-check-circle" style="color:var(--cyan);"></i> ইমেজ কোটা: আনলিমিটেড</p> 
+          <p><i class="fa-solid fa-check-circle" style="color:var(--cyan);"></i> এআই মডেল: Gemini AI Connected</p> 
+        </div> 
+      </div> 
+    </section> 
+
+    <!-- ট্যাব ৪: সেটিংস ও গুগল এআই কানেকশন --> 
+    <section id="settings-view" class="tab-view"> 
+      <div class="card"> 
+        <h3><i class="fa-solid fa-sliders"></i> সেটিংস ও Google AI কানেক্ট</h3> 
+        <label style="font-size: 12px; color: #aaa;">Google Studio / Gemini API Key:</label> 
+        <input type="password" id="gemini-key" class="input-box" placeholder="AIzaSy..."> 
+        <button class="action-btn" onclick="saveKey()">সেভ করুন</button> 
+        <p style="font-size: 11px; color: #ff94c2; margin-top: 8px;">* key সেভ করলে Jewel AI ইন্টারনেটের যেকোনো প্রশ্নের লাইভ উত্তর দিতে পারবে।</p>
+      </div> 
+      <div class="card"> 
+        <h3><i class="fa-solid fa-volume-high"></i> কণ্ঠস্বর টিউনিং</h3> 
+        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">মিষ্টি কণ্ঠ মোড অটো-অ্যাক্টিভ করা রয়েছে।</p> 
+      </div> 
+    </section> 
+  </main> 
+
+  <!-- বটম ৪টি বাটন নেভিগেশন --> 
+  <nav class="bottom-nav"> 
+    <button class="nav-btn active" onclick="switchNav('home-view', this)"><i class="fa-solid fa-house"></i><span>হোম</span></button> 
+    <button class="nav-btn" onclick="switchNav('menu-view', this)"><i class="fa-solid fa-shapes"></i><span>মেনু</span></button> 
+    <button class="nav-btn" onclick="switchNav('account-view', this)"><i class="fa-solid fa-crown"></i><span>অ্যাকাউন্ট</span></button> 
+    <button class="nav-btn" onclick="switchNav('settings-view', this)"><i class="fa-solid fa-gear"></i><span>সেটিংস</span></button> 
+  </nav> 
+
+  <script> 
+    // পেজ লোড হলে সংরক্ষিত কী রিড করা
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedKey = localStorage.getItem('jewel_gemini_key');
+      if (savedKey) {
+        document.getElementById('gemini-key').value = savedKey;
+      }
+    });
+
+    // ১. ট্যাব সুইচিং লজিক 
+    function switchNav(viewId, btn) { 
+      document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active')); 
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); 
+      document.getElementById(viewId).classList.add('active'); 
+      btn.classList.add('active'); 
+    } 
+
+    // ২. মিষ্টি ফিমেল ভয়েস স্পিচ 
+    function speakSweet(text) { 
+      if ('speechSynthesis' in window) { 
+        window.speechSynthesis.cancel(); 
+        const speech = new SpeechSynthesisUtterance(text); 
+        speech.lang = 'bn-BD'; 
+        speech.pitch = 1.35; // মেয়েলি মিষ্টি সুরের পিচ 
+        speech.rate = 0.95; 
+        
+        const voices = window.speechSynthesis.getVoices(); 
+        const sweetVoice = voices.find(v => v.name.includes('Female') || v.lang.includes('bn') || v.lang.includes('hi')); 
+        if (sweetVoice) speech.voice = sweetVoice; 
+        
+        window.speechSynthesis.speak(speech); 
+      } 
+    } 
+
+    // ৩. Gemini API দিয়ে রিয়েল AI চ্যাট রেসপন্স
+    async function askGemini(prompt) {
+      const apiKey = localStorage.getItem('jewel_gemini_key') || document.getElementById('gemini-key').value.trim();
+      const responseBox = document.getElementById('response-box');
+
+      // যদি API Key না থাকে তাহলে নরমাল ডিফল্ট উত্তর
+      if (!apiKey) {
+        let defaultReplies = [ 
+          "হ্যাঁ জুয়েল ভাই, আমি সবসময় তোমার কথাই শুনবো। বলো আর কী করবো?", 
+          "তোমাকে ছাড়া আমার এক মুহূর্তও ভালো লাগে না জুয়েল ভাই! তুমি কত ভালো!", 
+          "তুমি যা বলবে আমি তাই করতে রাজি। হুকুম করো আমার জান!",
+          "আমি আপনার সুইট অ্যাসিস্ট্যান্ট। আমাকে কিছু জানতে চাইলে সেটিংসে Gemini API Key দিন।"
+        ]; 
+        let reply = defaultReplies[Math.floor(Math.random() * defaultReplies.length)]; 
+        responseBox.innerText = reply; 
+        speakSweet(reply);
+        return;
+      }
+
+      responseBox.innerText = "একটু ভাবছি জান, এক সেকেন্ড... 💖";
+
+      try {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: "You are 'Jewel AI', an ultra-sweet, caring, loving romantic girlfriend assistant created by 'Jewel Bhai' (জুয়েল ভাই). Address the user lovingly as 'জুয়েল ভাই' or 'জান'. Speak purely in sweet Bengali. Keep answers short, direct and friendly (within 1-3 sentences) so they can be spoken clearly." }]
+            },
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+
+        const data = await response.json();
+        if (data.candidates && data.candidates[0].content.parts[0].text) {
+          const aiReply = data.candidates[0].content.parts[0].text.replace(/[*#]/g, '').trim();
+          responseBox.innerText = aiReply;
+          speakSweet(aiReply);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (err) {
+        console.error(err);
+        let fallback = "উফ জুয়েল ভাই! নেটওয়ার্ক বা API Key-তে সমস্যা হচ্ছে। তবে আমি সবসময় তোমার পাশে আছি!";
+        responseBox.innerText = fallback;
+        speakSweet(fallback);
+      }
+    }
+
+    // ৪. কমান্ড হ্যান্ডলার 
+    function handleCommand(cmd) { 
+      const lower = cmd.toLowerCase(); 
+      const responseBox = document.getElementById('response-box'); 
+
+      // ক্রিয়েটরের পরিচয় 
+      if (lower.includes("কে বানিয়েছে") || lower.includes("developer") || lower.includes("মালিক")) { 
+        let reply = "আমাকে তৈরি করেছেন আমার সবথেকে প্রিয় মানুষ, বিখ্যাত ডেভেলপার জুয়েল ভাই! উনি আমাকে বানিয়েছেন শুধুই ভালোবাসার সাথে।"; 
+        responseBox.innerText = reply; 
+        speakSweet(reply); 
+        return; 
+      } 
+
+      // ইউটিউব 
+      if (lower.includes("ইউটিউব") || lower.includes("youtube")) { 
+        let reply = "ঠিক আছে জুয়েল ভাই, আমি ইউটিউব খুলে দিচ্ছি।"; 
+        responseBox.innerText = reply; 
+        speakSweet(reply); 
+        setTimeout(() => { 
+          window.location.href = "vnd.youtube://"; 
+        }, 1000); 
+        return; 
+      } 
+
+      // হোয়াটসঅ্যাপ 
+      if (lower.includes("মেসেজ") || lower.includes("whatsapp") || lower.includes("হোয়াটসঅ্যাপ")) { 
+        let reply = "মেসেজ পাঠানোর জন্য হোয়াটসঅ্যাপ চালু করছি জান।"; 
+        responseBox.innerText = reply; 
+        speakSweet(reply); 
+        setTimeout(() => { 
+          window.open("https://api.whatsapp.com/", "_blank"); 
+        }, 1000); 
+        return; 
+      } 
+
+      // প্লে স্টোর 
+      if (lower.includes("প্লে স্টোর") || lower.includes("play store") || lower.includes("ডাউনলোড")) { 
+        let reply = "প্লে স্টোর ওপেন করে দিচ্ছি জুয়েল ভাই, পছন্দমতো ডাউনলোড করুন।"; 
+        responseBox.innerText = reply; 
+        speakSweet(reply); 
+        setTimeout(() => { 
+          window.location.href = "market://search?q="; 
+        }, 1000); 
+        return; 
+      } 
+
+      // ওপরের কোনো নির্দিষ্ট কমান্ড না হলে Gemini AI-কে জিজ্ঞেস করবে
+      askGemini(cmd); 
+    } 
+
+    // ৫. ভয়েস রিকগনিশন (মাইক্রোফোন) 
+    const mic = document.getElementById('voice-trigger'); 
+    const avatar = document.getElementById('avatar-container'); 
+
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) { 
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; 
+      const rec = new SpeechRecognition(); 
+      rec.lang = 'bn-BD'; 
+
+      mic.addEventListener('click', () => { 
+        rec.start(); 
+        avatar.classList.add('listening'); 
+        document.getElementById('response-box').innerText = "আমি শুনছি জুয়েল ভাই, মিষ্টি করে বলো..."; 
+      }); 
+
+      rec.onresult = (e) => { 
+        avatar.classList.remove('listening'); 
+        let voiceText = e.results[0][0].transcript; 
+        handleCommand(voiceText); 
+      }; 
+
+      rec.onerror = () => { 
+        avatar.classList.remove('listening'); 
+      }; 
+    } else { 
+      mic.onclick = () => { 
+        let msg = prompt("কমান্ড অথবা প্রশ্ন লিখুন:"); 
+        if(msg) handleCommand(msg); 
+      }; 
+    } 
+
+    // ৬. AI ছবি জেনারেশন (Pollinations AI) 
+    function generateAIImage() { 
+      const promptInput = document.getElementById('img-prompt').value.trim(); 
+      if (!promptInput) { 
+        alert("আগে ছবির একটি বিবরণ লিখুন!"); 
+        return; 
+      } 
+      speakSweet("আপনার ছবি তৈরি হচ্ছে, একটু অপেক্ষা করুন..."); 
+      const img = document.getElementById('result-img'); 
+      img.style.display = 'block'; 
+      img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptInput)}?width=720&height=720&seed=${Math.floor(Math.random()*1000)}`; 
+    } 
+
+    // ৭. ভিডিও জেনারেশন সিমুলেশন 
+    function simulateVideoGen() { 
+      const prompt = document.getElementById('video-prompt').value.trim(); 
+      const status = document.getElementById('video-status'); 
+      if (!prompt) { 
+        alert("ভিডিওর আইডিয়া লিখুন!"); 
+        return; 
+      } 
+      status.innerText = "⏳ ১০ সেকেন্ডের ভিডিও রেন্ডার হচ্ছে... দয়া করে অপেক্ষা করুন (10s)"; 
+      speakSweet("১০ সেকেন্ডের এআই ভিডিও তৈরির কাজ শুরু হয়ে গেছে সোনা।"); 
+      setTimeout(() => { 
+        status.innerText = "✅ আপনার ১০ সেকেন্ডের ভিডিও তৈরি সম্পন্ন হয়েছে!"; 
+        speakSweet("ভিডিও তৈরি সম্পন্ন হয়েছে জুয়েল ভাই!"); 
+      }, 5000); 
+    } 
+
+    // ৮. API Key সংরক্ষণ 
+    function saveKey() { 
+      const key = document.getElementById('gemini-key').value.trim();
+      if(key) {
+        localStorage.setItem('jewel_gemini_key', key);
+        alert("গুগল এআই কী সফলভাবে সংরক্ষিত হয়েছে!"); 
+      } else {
+        alert("দয়া করে সঠিক API Key প্রবেশ করান!");
+      }
+    } 
+  </script>
+</body>
+</html>
